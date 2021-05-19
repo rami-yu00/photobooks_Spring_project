@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<!-- board.xml 땡겨옴 -->	
+	
+	<typeAliases>
+	   <package name="com.tis.photobook.domain"/>
+	   <package name="com.tis.photobook.dto"/>
+	</typeAliases>
+	<mappers>
+		<mapper resource="config/mybatis/board.xml" /> 
+        <mapper resource="config/mybatis/users.xml" /> 
+        <mapper resource="config/mybatis/post.xml" /> 
+        <mapper resource="config/mybatis/post_reply.xml" /> 
+        <mapper resource="config/mybatis/search.xml" /> 
+	</mappers>
+</configuration>
+

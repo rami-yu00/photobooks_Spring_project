@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="post_reply">	
+   <select id="getReplyAllByPostNo" parameterType="int" resultType="PostReplyVO">
+    select pr.reply_no, pr.post_no, pr.user_no, u.user_id, ui.user_img_name, pr.content, pr.reply_reg_date
+    from(select * from pb_reply) pr
+    left outer join pb_users u
+    on u.user_no = pr.user_no
+    left outer join pb_users_img ui
+    on ui.user_no = pr.user_no
+    where pr.post_no = #{post_no}
+    order by pr.reply_reg_date DESC
+   </select>
+   
+   <select id="getReplyAllByPostNoDESC" parameterType="int" resultType="PostReplyVO">
+    select pr.reply_no, pr.post_no, pr.user_no, u.user_id, ui.user_img_name, pr.content, pr.reply_reg_date
+    from(select * from pb_reply) pr
+    left outer join pb_users u
+    on u.user_no = pr.user_no
+    left outer join pb_users_img ui
+    on ui.user_no = pr.user_no
+    where pr.post_no = #{post_no}
+    order by pr.reply_no DESC
+   </select>
+   
+   <select id="getReplyPaging" parameterType="PostReplyDTO" resultType="PostReplyVO">
+	select * from (
+	select rownum rn, r.* from(
+	  select pr.reply_no, pr.post_no, pr.user_no, u.user_id, ui.user_img_name, pr.content, pr.reply_reg_date
+	from(select * from pb_reply) pr
+	left outer join pb_users u
+	on u.user_no = pr.user_no
+	left outer join pb_users_img ui
+	on ui.user_no = pr.user_no
+	where pr.post_no = #{post_no}
+	order by pr.reply_no desc
+	) r )  where rn between #{start} and #{end} ;
+   </select>
+   
+   <insert id="addReply" parameterType="PostReplyDTO">
+    insert into pb_reply(reply_no, user_no, post_no, content) 
+    values(
+        pb_replySeq.nextVal, #{user_no}, #{post_no}, #{content}
+    )
+   </insert>
+   
+   <delete id="delReply" parameterType="int">
+        delete from pb_reply where reply_no = #{reply_no}
+   </delete>
+   
+   <update id="modifyReply" parameterType="PostReplyDTO">
+        update pb_reply set content = #{content}, reply_reg_date = sysdate where reply_no = #{reply_no} 
+   </update>
+</mapper>
+
+
+
+
+
+
+
