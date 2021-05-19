@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="post">	
+
+    <insert id="insertPost" >
+        insert into pb_post(post_no, post_caption, user_no, post_file_count)
+        values(pb_postSeq.nextVal, #{post_caption}, #{user_no}, #{post_file_count})
+    </insert>
+    
+    <select id="selectPostNo" resultType="int" parameterType="PostDTO">
+        select post_no from pb_post
+        where post_caption = #{post_caption} and user_no = #{user_no} and post_file_count = #{post_file_count}
+    </select>
+    
+    <insert id="insertPostFile" >
+        insert into pb_post_file(post_file_no, post_no, post_file_name)
+        values(pb_post_fileSeq.nextVal, #{post_no}, #{post_file_name})
+    </insert>
+    
+    <delete id="delPost" parameterType="int">
+        delete from pb_post where post_no = #{post_no}
+    </delete>
+    
+    <update id="modifyPost" parameterType="PostDTO">
+        update pb_post set post_caption = #{post_caption}, post_reg_date = sysdate where post_no = #{post_no} 
+    </update>
+    
+    <select id="userPostList" resultType="PostVO" parameterType="int">
+        select p.user_no, p.post_no, pf.post_file_no, pf.post_file_name, p.post_reg_date, 
+        (select  count(*) from pb_like pl where pl.post_no = p.post_no ) as like_count,
+        (select count(*) from pb_reply pr where pr.post_no = p.post_no) as reply_count
+        from (select * from pb_post) p
+        left outer join pb_post_file pf
+        on pf.post_no = p.post_no
+        where p.user_no = #{user_no}
+        and pf.post_file_name like 's_%'
+        order by p.post_reg_date desc
+    </select>
+    
+    <select id="postAll" resultType="PostVO">
+        select  u.user_no, u.user_id, i.user_img_no, i.user_img_name, p.post_no, p.post_caption, p.post_reg_date, p.post_file_count
+        from pb_users u right join pb_users_img i
+        on u.user_no = i.user_no
+        right join pb_post p
+        on u.user_no = p.user_no
+        order by p.post_no desc
+    </select>
+    
+    <select id="postDetail" parameterType="int" resultType="PostVO">
+       select  u.user_no, u.user_id, i.user_img_no, i.user_img_name, p.post_no, p.post_caption, p.post_reg_date, p.post_file_count,
+		(select count(*) from pb_like pl where pl.post_no = p.post_no ) as like_count,
+		(select count(*) from pb_reply pr where pr.post_no = p.post_no ) as reply_count
+		from pb_users u right join pb_users_img i
+		on u.user_no = i.user_no
+		right join pb_post p
+		on u.user_no = p.user_no
+		where p.post_no = #{post_no}
+    </select>
+    
+    <select id="postNoToPostFile" parameterType="int" resultType="PostFileDTO">
+        select * from pb_post_file
+        where post_no = #{post_no}
+    </select>
+    
+    <!-- post 좋아요  -->
+    
+    <select id="postLikesCount" parameterType="int" resultType="int">
+        select count(*)as like_cnt 
+        from pb_like
+        where post_no = #{post_no}
+    </select>
+    
+    <select id="postLikesCheck" parameterType="PostDTO" resultType="int">
+        select count(*)as like_check
+        from pb_like
+        where post_no = #{post_no} and user_no = #{user_no}
+    </select>
+    
+    <select id="postLikeAll" parameterType="PostDTO" resultType="PostDTO">
+        select * from pb_like 
+        where post_no = #{post_no} and user_no = #{user_no}
+    </select>
+    
+    <insert id="likeInsert" parameterType="PostDTO">
+        insert into pb_like values( pb_likeSeq.nextVal , #{user_no}, #{post_no} )
+    </insert>
+    
+    <select id="likeSearch" parameterType="PostDTO" resultType="int">
+        select like_no from pb_like 
+        where post_no = #{post_no} and user_no = #{user_no}
+    </select>
+    
+    <delete id="likeDelete" parameterType="int">
+	    delete from pb_like
+	    where like_no = #{like_no}
+    </delete>
+    
+    <!-- /post 좋아요  -->
+</mapper>
+
+
+
+
+
+
+

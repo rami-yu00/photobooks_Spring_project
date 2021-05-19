@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="users">	
+    <select id="loginUser" parameterType="LoginDTO" resultType="UsersVO">
+        select * from pb_users
+        where user_id = #{user_eid} or user_email = #{user_eid}
+    </select>
+    
+    <!-- ===========================[ 회원가입 ]=============================== -->
+    <!-- 회원등록 -->
+    <insert id="register" >
+        insert into pb_users(user_no, user_email, user_id, user_pwd)
+        values(pb_usersSeq.nextVal, #{user_email}, #{user_id}, #{user_pwd})
+    </insert>
+    <!-- 이메일 중복체크 -->
+    <select id="isDuplicateEmail" parameterType="String" resultType="int">
+        select count(*) from pb_users
+        where user_email = #{user_email}
+    </select>
+    <!-- 아이디 중복체크 -->
+    <select id="isDuplicateId" parameterType="String" resultType="int">
+        select count(*) from pb_users
+        where user_id = #{user_id}
+    </select>
+    
+    <!-- ========================[ 회원가입 프로필 설정 ]======================== -->
+    <!-- 프로필 사진 insert -->
+    <insert id="insertProfileImg" >
+        insert into pb_users_img values( pb_users_imgSeq.nextVal, #{user_no}, #{user_img_name})
+    </insert>
+    <!-- 프로필 이름 & 소개 insert -->
+    <insert id="insertProfileNameAndIntro">
+        insert into pb_users_profile values( pb_users_profileSeq.nextVal, #{user_no} , #{user_name}, #{user_intro})
+    </insert>
+    
+    <!-- ==========================[ 회원정보 조회 ]============================ -->
+    <!-- 회원 번호로 회원전체 정보 조회 (기본정보,프사,이름&소개) -->
+    <!-- 회원번호로 조회-->
+    <select id="selectUser" parameterType="int" resultType="UsersVO">
+    select * from( 
+        select u.user_no ,u.user_email, u.user_id, u.user_pwd, u.user_reg_date, 
+        user_profile_no, user_name, user_intro , 
+        user_img_no, user_img_name,
+            (select count(*) from pb_post p where p.user_no = u.user_no ) as post_count ,
+            (select count(*) from pb_follow f where f.passive_user_no = u.user_no) as user_follower,
+            (select count(*) from pb_follow f where f.active_user_no = u.user_no )as user_following
+        from (select * from pb_users ) u
+            left outer join pb_users_profile
+                on pb_users_profile.user_no = u.user_no
+            left outer join pb_users_img
+                on pb_users_img.user_no = u.user_no 
+            where u.user_no  = #{user_no} 
+    )
+    </select>
+    <!--전체회원의 정보 조회 -->
+    <select id="selectUserAll" resultType="UsersVO">
+        select * from( 
+            select u.user_no ,u.user_email, u.user_id, u.user_pwd, u.user_reg_date, 
+            user_profile_no, user_name, user_intro , 
+            user_img_no, user_img_name,
+                (select count(*) from pb_post p where p.user_no = u.user_no ) as post_count ,
+                (select count(*) from pb_follow f where f.passive_user_no = u.user_no) as user_follower,
+                (select count(*) from pb_follow f where f.active_user_no = u.user_no )as user_following
+            from (select * from pb_users ) u
+                left outer join pb_users_profile
+                    on pb_users_profile.user_no = u.user_no
+                left outer join pb_users_img
+                    on pb_users_img.user_no = u.user_no 
+            order by user_no asc 
+        )
+    </select>
+    
+    <!-- 아이디로 조회 -->
+    <select id="selectUserById" parameterType="String" resultType="UsersVO" >
+        select * from pb_users
+        where user_id = #{user_id}
+    </select>
+    
+    <!-- 회원번호로 프로필사진 조회 -->
+    <select id="selectUserImgByNo" parameterType="int" resultType="UserImgsVO">
+        select * from pb_users_img
+        where user_no = #{user_no}
+    </select>
+    
+    <select id="getFollowerByUserNo" parameterType="int" resultType="UserFollowVO">
+        select f.passive_user_no, f.follow_no, f.active_user_no, u.user_id, ui.user_img_name 
+	    from (select * from pb_follow) f
+	    left outer join pb_users u
+	    on u.user_no = f.active_user_no
+	    left outer join pb_users_img ui
+	    on ui.user_no = f.active_user_no
+	    where passive_user_no = #{user_no}
+	    order by u.user_id asc
+    </select>
+    
+    <select id="getFollowingByUserNo" parameterType="int" resultType="UserFollowVO">
+        select f.active_user_no, f.follow_no, f.passive_user_no, u.user_id, ui.user_img_name 
+	    from (select * from pb_follow) f
+	    left outer join pb_users u
+	    on u.user_no = f.passive_user_no
+	    left outer join pb_users_img ui
+	    on ui.user_no = f.passive_user_no
+	    where active_user_no = #{user_no}
+	    order by u.user_id asc
+    </select>
+    
+    <select id="checkFollow" parameterType="UserFollowDTO" resultType="int">
+        select count(*) as check_follow from pb_follow
+        where active_user_no = #{active_user_no} and passive_user_no = #{passive_user_no}
+    </select>
+    
+    <insert id="addFollow" parameterType="UserFollowDTO">
+        insert into pb_follow values( pb_followSeq.nextVal , #{active_user_no}, #{passive_user_no} )
+    </insert>
+    
+    <delete id="deleteFollow" parameterType="UserFollowDTO">
+        delete from pb_follow where active_user_no= #{active_user_no} and passive_user_no = #{passive_user_no}
+    </delete>
+</mapper>
+
+
+
+
+
+
+
