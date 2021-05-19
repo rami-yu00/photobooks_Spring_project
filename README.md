@@ -7,4 +7,5 @@
   - Oracle 11g
   - Spring Tool Suite 4
 * 사용기술
-  > Java, Spring, Maven, Lombok, MyBatis, SQL, JSP, Servlet, JSTL, Bootstrap, HTML5, CSS3, JavaScript, JQuery, Ajax 등..
+  > Java, Spring, Maven, Lombok, MyBatis, SQL, JSP, Servlet, JSTL, 
+  > Bootstrap, HTML5, CSS3, JavaScript, JQuery, Ajax 등..
